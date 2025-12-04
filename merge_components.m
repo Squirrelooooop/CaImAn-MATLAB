@@ -61,8 +61,12 @@ if nargin < 9
     FF1 = triu(C_corr)>= thr;                           % find graph of strongly correlated temporal components
     
        
-    FF3 = and(FF1,FF2);                                 % intersect the two graphs
-    [l,c] = graph_connected_comp(sparse(FF3+FF3'));     % extract connected components
+    FF3 = and(FF1,FF2);  % intersect the two graphs
+%%
+    G = graph(sparse(FF3 + FF3'));
+    l = conncomp(G);
+    c = max(l);
+%%
     MC = [];
     for i = 1:c
         if length(find(l==i))>1

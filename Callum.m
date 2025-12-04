@@ -15,8 +15,8 @@ files_tif = dir(fullfile(pIn, '*.tif'));
 files_tiff = dir(fullfile(pIn, '*.tiff'));    % use .tif/.tiff for 2D+time data
 files = [files_tif; files_tiff];                          
 
-for f = 1:numel(files)
-    fname = fullfile(pIn, files(f).name);
+for xxx = 1:numel(files)
+    fname = fullfile(pIn, files(xxx).name);
     
     info = imfinfo(fname);
 
@@ -49,7 +49,7 @@ for f = 1:numel(files)
 
 %% Set parameters
 
-    K = Tinfo.count(f);    
+    K = Tinfo.count(xxx);    
     tau = 10; % std of gaussian kernel (half size of neuron) 
     p = 2;
 
@@ -93,14 +93,14 @@ for f = 1:numel(files)
 
     Pm.p = p;    % restore AR value
     [A2,b2,C2] = update_spatial_components(Yr,Cm,f,[Am,b],Pm,options);
-    [C2,f2,P2,S2,YrA2] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options);
+    [C2,f2,P2,S2,YrA2] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options)
 
 %% do some plotting
 
     [A_or,C_or,S_or,P_or] = order_ROIs(A2,C2,S2,P2); % order components
     %K_m = size(C_or,1);
     [C_df,~] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
-    
+    C_df = 
     Cn = correlation_image(Y);
 
     
@@ -108,18 +108,24 @@ for f = 1:numel(files)
 %% Save ΔF/F + ROI numbers + centers as one CSV
 
     numROIs = size(C_df,1);
-    roi_table = table((1:numROIs)', center(:,1), center(:,2), 'VariableNames', {'ROI','y','x'});
+    center = center(1:numROIs, :);
+
+    roi_table = table((1:numROIs)', center(:,1), center(:,2), ...
+        'VariableNames', {'ROI','y','x'});
+
     for t_col = 1:size(C_df,2)
         roi_table.(sprintf('t%03d',t_col)) = C_df(:,t_col);
     end
-    csvfile = fullfile(pOut, [files(f).name(1:end-4), '_df.csv']);
+
+    csvfile = fullfile(pOut, [files(xxx).name(1:end-4), '_df.csv']);
     writetable(roi_table, csvfile);
+
     fprintf('Saved ΔF/F CSV: %s\n', csvfile);    
     
    %% Save contour figure
     fig1 = figure('Visible','off');
     plot_contours(A_or, Cn, options, 1);
-    contourfile = fullfile(pOut, [files(f).name(1:end-4), '_contours.png']);
+    contourfile = fullfile(pOut, [files(xxx).name(1:end-4), '_contours.png']);
     saveas(fig1, contourfile);
     close(fig1);
     fprintf('Saved contour figure: %s\n', contourfile);
@@ -128,13 +134,13 @@ for f = 1:numel(files)
   %% Save components GUI figure
     fig2 = figure('Visible','off');
     plot_components_GUI(Yr, A_or, C_or, b2, f2, Cn, options);
-    guifile = fullfile(pOut, [files(f).name(1:end-4), '_components.png']);
+    guifile = fullfile(pOut, [files(xxx).name(1:end-4), '_components.png']);
     saveas(fig2, guifile);
     close(fig2);
     fprintf('Saved components GUI figure: %s\n', guifile);
 
 %% Save full MAT file
-    matfile = fullfile(pOut, [files(f).name(1:end-4), '_caiman.mat']);
+    matfile = fullfile(pOut, [files(xxx).name(1:end-4), '_caiman.mat']);
     save(matfile, 'A2','C2','b2','f2','P2','S2','C_df','center','options','Cn','Yr');
     fprintf('Saved MAT file: %s\n', matfile);
     
